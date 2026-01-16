@@ -1,0 +1,75 @@
+name: Embedded CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+  schedule:
+    - cron: "0 0 * * *"   # Nightly at midnight
+
+jobs:
+  build:
+    name: Build (A, B, C)
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        component: [a, b, c]   # Runs builds in parallel for each component
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up build environment
+        run: |
+          # Example toolchain setup for embedded builds
+          export CC=gcc
+          export CXX=g++
+          echo "Toolchain configured: CC=$CC, CXX=$CXX"
+
+      - name: Build component ${{ matrix.component }}
+        run: |
+          # In a real project, each component would have its own Make/CMake build
+          cd components/${{ matrix.component }}
+          make clean
+          make -j$(nproc)
+
+  test:
+    name: Unit Tests (A, B, C)
+    needs: build
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        component: [a, b, c]   # Runs tests in parallel for each component
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run unit tests for component ${{ matrix.component }}
+        run: |
+          # In a real project, this could run: make test / ctest / pytest
+          cd components/${{ matrix.component }}
+          make test
+
+  package:
+    name: Package Deployment Artifact
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create deployment package
+        run: |
+          # In a real embedded system, this might collect binaries, configs, and scripts
+          mkdir -p deploy
+          tar -czvf deploy/embedded_release.tar.gz components/
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: embedded-release
+          path: deploy/embedded_release.tar.gz
