@@ -3,7 +3,7 @@ name: Embedded CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - develop
   schedule:
     - cron: "0 0 * * *"   # Nightly at midnight
 
