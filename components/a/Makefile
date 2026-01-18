@@ -1,10 +1,19 @@
 .PHONY: all clean test
 
-all:
-	@echo "Building component A (placeholder)"
+CC = gcc
+CFLAGS = -Wall -Wextra -O2
 
-clean:
-	@echo "Cleaning component A (placeholder)"
+all:
+	@echo "Building component A"
+	$(CC) $(CFLAGS) -c main.c -o main.o
 
 test:
-	@echo "Running unit tests for component A (placeholder)"
+	@echo "Running unit tests for component A"
+	$(CC) $(CFLAGS) test.c main.c -o test_a
+	./test_a
+
+clean:
+	@echo "Cleaning component A"
+	rm -f *.o test_a
+
+
